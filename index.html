@@ -4,150 +4,43 @@
   <meta charset="UTF-8" />
   <title>Adventure Game</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    .options {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      justify-items: center;
-      margin-top: 20px;
-    }
-    .option {
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      cursor: pointer;
-      width: 150px;
-    }
-    .option img {
-      max-width: 100px;
-      max-height: 100px;
-    }
-    #readoutBar {
+    body { font-family: Arial, sans-serif; text-align: center; background: #f0f0f0; margin: 0; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    h1 { font-size: 24px; }
+    .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+    .option { background: white; padding: 10px; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .option img { width: 100px; height: 100px; object-fit: contain; display: block; margin: 0 auto; }
+    .readout-bar {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #f9f9f9;
-      border-top: 2px solid #ccc;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
+      bottom: 0; left: 0; width: 100%;
+      background: #333; color: white;
+      padding: 10px; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
       gap: 10px;
     }
-    #readoutBar img {
-      max-height: 40px;
-    }
+    .readout-bar img { height: 40px; }
   </style>
 </head>
 <body>
-  <h1 id="questionText">Choose your character</h1>
-  <div id="options" class="options"></div>
+  <div class="container">
+    <h1 id="question">Choose your character</h1>
+    <div class="options" id="options"></div>
+  </div>
 
-  <div id="readoutBar">
-    <img id="readoutSymbol" alt="" />
-    <span id="readoutText"></span>
+  <div class="readout-bar">
+    <img id="readoutImage" src="" alt="" />
+    <span id="readoutText">...</span>
   </div>
 
   <script>
-    // ---- OPTION ARRAYS ----
-    const characters = [
-      { text: "Knight", symbol: "knight" },
-      { text: "Princess", symbol: "princess" },
-      { text: "Dragon", symbol: "dragon" },
-      { text: "Wizard", symbol: "wizard" },
-      { text: "Pirate", symbol: "pirate" },
-      { text: "Robot", symbol: "robot" },
-      { text: "Alien", symbol: "alien" },
-      { text: "Cat", symbol: "cat" },
-      { text: "Dog", symbol: "dog" }
-    ];
+    const PIXABAY_KEY = "49978957-7f3f3c500656460c1f5b4026f";
 
-    const skills = [
-      { text: "Running", symbol: "run" },
-      { text: "Teamwork", symbol: "team" },
-      { text: "Reading", symbol: "read" },
-      { text: "Writing", symbol: "write" },
-      { text: "Cooking", symbol: "cook" },
-      { text: "Flying", symbol: "fly" },
-      { text: "Casting Spells", symbol: "magic" },
-      { text: "Swimming", symbol: "swim" },
-      { text: "Building", symbol: "build" }
-    ];
-
-    const terrains = [
-      { text: "Forest", symbol: "forest" },
-      { text: "Desert", symbol: "desert" },
-      { text: "Mountain", symbol: "mountain" },
-      { text: "Ocean", symbol: "ocean" },
-      { text: "City", symbol: "city" },
-      { text: "Village", symbol: "village" },
-      { text: "Castle", symbol: "castle" },
-      { text: "Island", symbol: "island" },
-      { text: "Space", symbol: "space" }
-    ];
-
-    // ---- QUESTION FLOW ----
+    // Questions with 9 options each
     const questions = [
-      { text: "Choose your character", options: characters },
-      { text: "What is your special skill?", options: skills },
-      { text: "Where will your adventure begin?", options: terrains }
-    ];
-
-    let currentQuestion = 0;
-
-    function loadQuestion() {
-      const q = questions[currentQuestion];
-      document.getElementById("questionText").innerText = q.text;
-
-      const optionsDiv = document.getElementById("options");
-      optionsDiv.innerHTML = "";
-
-      q.options.forEach(opt => {
-        const div = document.createElement("div");
-        div.className = "option";
-        div.innerHTML = `
-          <img src="https://static.arasaac.org/pictograms/${opt.symbol}.png" alt="${opt.text}" onerror="this.src='https://via.placeholder.com/100'">
-          <div>${opt.text}</div>
-        `;
-        div.onclick = () => handleChoice(opt);
-        optionsDiv.appendChild(div);
-      });
-    }
-
-    function handleChoice(option) {
-      updateReadout(option.text, option.symbol);
-      speakText(option.text);
-
-      currentQuestion++;
-      if (currentQuestion < questions.length) {
-        setTimeout(loadQuestion, 1000);
-      } else {
-        document.getElementById("questionText").innerText = "Adventure ready!";
-        document.getElementById("options").innerHTML = "";
-      }
-    }
-
-    function updateReadout(text, symbol) {
-      document.getElementById("readoutText").innerText = text;
-      document.getElementById("readoutSymbol").src =
-        `https://static.arasaac.org/pictograms/${symbol}.png`;
-    }
-
-    function speakText(text) {
-      const utter = new SpeechSynthesisUtterance(text);
-      speechSynthesis.speak(utter);
-    }
-
-    // Start game
-    loadQuestion();
-  </script>
-</body>
-</html>
+      {
+        text: "Choose your character",
+        options: ["Samurai", "Knight", "Wizard", "Princess", "Dragon", "Robot", "Pirate", "Explorer", "Giant"]
+      },
+      {
+        text: "What is your special skill?",
+        options: ["Running", "Teamwork", "Cooking", "Reading

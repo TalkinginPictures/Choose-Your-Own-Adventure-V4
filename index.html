@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Adventure Game</title>
   <style>
     body {
@@ -11,136 +10,144 @@
       margin: 0;
       padding: 0;
     }
-    .container {
-      padding: 20px;
-    }
     .options {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      justify-items: center;
       margin-top: 20px;
     }
     .option {
       border: 2px solid #ccc;
-      padding: 10px;
       border-radius: 10px;
+      padding: 10px;
       cursor: pointer;
-      transition: transform 0.2s;
-      background: #f9f9f9;
-    }
-    .option:hover {
-      transform: scale(1.05);
-      border-color: #333;
+      width: 150px;
     }
     .option img {
-      max-width: 80px;
-      max-height: 80px;
-      display: block;
-      margin: 0 auto 10px;
+      max-width: 100px;
+      max-height: 100px;
     }
     #readoutBar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: #222;
-      color: #fff;
+      background: #f9f9f9;
+      border-top: 2px solid #ccc;
       padding: 10px;
-      font-size: 18px;
       display: flex;
       align-items: center;
+      justify-content: center;
+      font-size: 18px;
       gap: 10px;
-      z-index: 1000;
     }
     #readoutBar img {
-      height: 40px;
+      max-height: 40px;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="game"></div>
+  <h1 id="questionText">Choose your character</h1>
+  <div id="options" class="options"></div>
 
-  <div id="readoutBar"><span id="readoutText">Welcome to the adventure!</span></div>
+  <div id="readoutBar">
+    <img id="readoutSymbol" alt="" />
+    <span id="readoutText"></span>
+  </div>
 
   <script>
-    const game = document.getElementById("game");
-    const readoutText = document.getElementById("readoutText");
-    const readoutBar = document.getElementById("readoutBar");
+    // ---- OPTION ARRAYS ----
+    const characters = [
+      { text: "Knight", symbol: "knight" },
+      { text: "Princess", symbol: "princess" },
+      { text: "Dragon", symbol: "dragon" },
+      { text: "Wizard", symbol: "wizard" },
+      { text: "Pirate", symbol: "pirate" },
+      { text: "Robot", symbol: "robot" },
+      { text: "Alien", symbol: "alien" },
+      { text: "Cat", symbol: "cat" },
+      { text: "Dog", symbol: "dog" }
+    ];
 
-    function speak(text, symbolUrl = null) {
-      readoutText.innerHTML = symbolUrl ? `<img src="${symbolUrl}" alt="symbol"> ${text}` : text;
-      const utterance = new SpeechSynthesisUtterance(text);
-      speechSynthesis.cancel();
-      speechSynthesis.speak(utterance);
-    }
+    const skills = [
+      { text: "Running", symbol: "run" },
+      { text: "Teamwork", symbol: "team" },
+      { text: "Reading", symbol: "read" },
+      { text: "Writing", symbol: "write" },
+      { text: "Cooking", symbol: "cook" },
+      { text: "Flying", symbol: "fly" },
+      { text: "Casting Spells", symbol: "magic" },
+      { text: "Swimming", symbol: "swim" },
+      { text: "Building", symbol: "build" }
+    ];
 
-    async function getSymbol(word) {
-      try {
-        const res = await fetch(`https://api.arasaac.org/api/pictograms/en/search/${word}`);
-        const data = await res.json();
-        if (data.length > 0) {
-          return `https://static.arasaac.org/pictograms/${data[0]._id}/${data[0]._id}_500.png`;
-        }
-      } catch (e) {
-        console.log("Symbol not found:", word);
-      }
-      return null;
-    }
+    const terrains = [
+      { text: "Forest", symbol: "forest" },
+      { text: "Desert", symbol: "desert" },
+      { text: "Mountain", symbol: "mountain" },
+      { text: "Ocean", symbol: "ocean" },
+      { text: "City", symbol: "city" },
+      { text: "Village", symbol: "village" },
+      { text: "Castle", symbol: "castle" },
+      { text: "Island", symbol: "island" },
+      { text: "Space", symbol: "space" }
+    ];
 
-    async function showOptions(title, options, callback) {
-      game.innerHTML = `<h2>${title}</h2><div class='options'></div>`;
-      const optionsDiv = game.querySelector(".options");
-      speak(title);
+    // ---- QUESTION FLOW ----
+    const questions = [
+      { text: "Choose your character", options: characters },
+      { text: "What is your special skill?", options: skills },
+      { text: "Where will your adventure begin?", options: terrains }
+    ];
 
-      for (let opt of options) {
-        const symbolUrl = await getSymbol(opt);
+    let currentQuestion = 0;
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("questionText").innerText = q.text;
+
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+
+      q.options.forEach(opt => {
         const div = document.createElement("div");
         div.className = "option";
         div.innerHTML = `
-          ${symbolUrl ? `<img src="${symbolUrl}" alt="${opt}">` : ""}
-          <span>${opt}</span>
+          <img src="https://static.arasaac.org/pictograms/${opt.symbol}.png" alt="${opt.text}" onerror="this.src='https://via.placeholder.com/100'">
+          <div>${opt.text}</div>
         `;
-        div.onclick = () => {
-          speak(opt, symbolUrl);
-          callback(opt);
-        };
+        div.onclick = () => handleChoice(opt);
         optionsDiv.appendChild(div);
-      }
-    }
-
-    // Game flow
-    async function startGame() {
-      speak("Welcome to the adventure! What is your name?");
-      game.innerHTML = `
-        <h2>Welcome to the adventure!</h2>
-        <p>What is your name?</p>
-        <input type="text" id="playerName" placeholder="Enter your name" />
-        <button id="startBtn">Continue</button>
-      `;
-      document.getElementById("startBtn").onclick = () => {
-        const name = document.getElementById("playerName").value || "Player";
-        chooseCharacter(name);
-      };
-    }
-
-    async function chooseCharacter(name) {
-      const characters = ["Knight", "Wizard", "Explorer"];
-      await showOptions(`${name}, choose your character:`, characters, skillSelection);
-    }
-
-    async function skillSelection(character) {
-      const skills = [
-        "Running", "Teamwork", "Reading", "Writing", "Cooking",
-        "Flying", "Casting spells", "Invisibility", "Healing",
-        "Sword fighting", "Singing", "Dancing"
-      ];
-      await showOptions(`Great choice! Now, what is your special skill?`, skills, (skill) => {
-        speak(`You chose the skill: ${skill}`);
-        game.innerHTML = `<h2>You are ready! Character and skill chosen.</h2>`;
       });
     }
 
-    startGame();
+    function handleChoice(option) {
+      updateReadout(option.text, option.symbol);
+      speakText(option.text);
+
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        setTimeout(loadQuestion, 1000);
+      } else {
+        document.getElementById("questionText").innerText = "Adventure ready!";
+        document.getElementById("options").innerHTML = "";
+      }
+    }
+
+    function updateReadout(text, symbol) {
+      document.getElementById("readoutText").innerText = text;
+      document.getElementById("readoutSymbol").src =
+        `https://static.arasaac.org/pictograms/${symbol}.png`;
+    }
+
+    function speakText(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utter);
+    }
+
+    // Start game
+    loadQuestion();
   </script>
 </body>
 </html>

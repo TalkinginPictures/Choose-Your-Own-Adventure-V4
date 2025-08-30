@@ -2,129 +2,145 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Adventure Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #f0f0f0;
       margin: 0;
-      padding-bottom: 100px; /* space for fixed readout bar */
+      padding: 0;
     }
     .container {
-      margin-top: 50px;
+      padding: 20px;
     }
-    .options img {
-      width: 100px;
-      height: 100px;
-      margin: 10px;
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .option {
+      border: 2px solid #ccc;
+      padding: 10px;
+      border-radius: 10px;
       cursor: pointer;
+      transition: transform 0.2s;
+      background: #f9f9f9;
     }
-    .hidden {
-      display: none;
+    .option:hover {
+      transform: scale(1.05);
+      border-color: #333;
     }
-    #readout-bar {
+    .option img {
+      max-width: 80px;
+      max-height: 80px;
+      display: block;
+      margin: 0 auto 10px;
+    }
+    #readoutBar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: #fff;
-      border-top: 2px solid #ccc;
+      background: #222;
+      color: #fff;
       padding: 10px;
-      text-align: center;
-      box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-    }
-    #readout-symbol {
-      width: 60px;
-      height: 60px;
-      display: block;
-      margin: 0 auto 5px auto;
-    }
-    #readout-text {
       font-size: 18px;
-      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 1000;
+    }
+    #readoutBar img {
+      height: 40px;
     }
   </style>
 </head>
 <body>
-  <div id="welcome" class="container">
-    <h1>Welcome to the Adventure!</h1>
-    <p>What is your name?</p>
-    <input type="text" id="playerName" placeholder="Enter your name" />
-    <button onclick="setName()">Continue</button>
-  </div>
+  <div class="container" id="game"></div>
 
-  <div id="characterSelect" class="container hidden">
-    <h2>Choose your character</h2>
-    <div class="options">
-      <img src="https://static.arasaac.org/pictograms/11860/11860.png" alt="Hero" onclick="selectCharacter('Hero', this.src)">
-      <img src="https://static.arasaac.org/pictograms/2475/2475.png" alt="Wizard" onclick="selectCharacter('Wizard', this.src)">
-      <img src="https://static.arasaac.org/pictograms/31656/31656.png" alt="Explorer" onclick="selectCharacter('Explorer', this.src)">
-    </div>
-  </div>
-
-  <div id="skillSelect" class="container hidden">
-    <h2>What is your special skill?</h2>
-    <div class="options">
-      <img src="https://static.arasaac.org/pictograms/12623/12623.png" alt="Running" onclick="selectSkill('Running', this.src)">
-      <img src="https://static.arasaac.org/pictograms/17453/17453.png" alt="Teamwork" onclick="selectSkill('Teamwork', this.src)">
-      <img src="https://static.arasaac.org/pictograms/5205/5205.png" alt="Reading" onclick="selectSkill('Reading', this.src)">
-      <img src="https://static.arasaac.org/pictograms/16955/16955.png" alt="Writing" onclick="selectSkill('Writing', this.src)">
-      <img src="https://static.arasaac.org/pictograms/2076/2076.png" alt="Cooking" onclick="selectSkill('Cooking', this.src)">
-      <img src="https://static.arasaac.org/pictograms/2760/2760.png" alt="Singing" onclick="selectSkill('Singing', this.src)">
-      <img src="https://static.arasaac.org/pictograms/5735/5735.png" alt="Drawing" onclick="selectSkill('Drawing', this.src)">
-      <img src="https://static.arasaac.org/pictograms/11229/11229.png" alt="Magic" onclick="selectSkill('Casting Spells', this.src)">
-      <img src="https://static.arasaac.org/pictograms/11925/11925.png" alt="Flying" onclick="selectSkill('Flying', this.src)">
-      <img src="https://static.arasaac.org/pictograms/19183/19183.png" alt="Invisibility" onclick="selectSkill('Invisibility', this.src)">
-      <img src="https://static.arasaac.org/pictograms/34771/34771.png" alt="Super Strength" onclick="selectSkill('Super Strength', this.src)">
-      <img src="https://static.arasaac.org/pictograms/35057/35057.png" alt="Healing" onclick="selectSkill('Healing', this.src)">
-    </div>
-  </div>
-
-  <!-- Fixed Readout Bar -->
-  <div id="readout-bar">
-    <img id="readout-symbol" src="" alt="" class="hidden">
-    <div id="readout-text"></div>
-  </div>
+  <div id="readoutBar"><span id="readoutText">Welcome to the adventure!</span></div>
 
   <script>
-    function speak(text, symbolSrc = null) {
-      // stop any current speech
-      window.speechSynthesis.cancel();
+    const game = document.getElementById("game");
+    const readoutText = document.getElementById("readoutText");
+    const readoutBar = document.getElementById("readoutBar");
+
+    function speak(text, symbolUrl = null) {
+      readoutText.innerHTML = symbolUrl ? `<img src="${symbolUrl}" alt="symbol"> ${text}` : text;
       const utterance = new SpeechSynthesisUtterance(text);
-      window.speechSynthesis.speak(utterance);
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    }
 
-      // update readout bar
-      document.getElementById("readout-text").textContent = text;
-      if (symbolSrc) {
-        const symbol = document.getElementById("readout-symbol");
-        symbol.src = symbolSrc;
-        symbol.classList.remove("hidden");
-      } else {
-        document.getElementById("readout-symbol").classList.add("hidden");
+    async function getSymbol(word) {
+      try {
+        const res = await fetch(`https://api.arasaac.org/api/pictograms/en/search/${word}`);
+        const data = await res.json();
+        if (data.length > 0) {
+          return `https://static.arasaac.org/pictograms/${data[0]._id}/${data[0]._id}_500.png`;
+        }
+      } catch (e) {
+        console.log("Symbol not found:", word);
+      }
+      return null;
+    }
+
+    async function showOptions(title, options, callback) {
+      game.innerHTML = `<h2>${title}</h2><div class='options'></div>`;
+      const optionsDiv = game.querySelector(".options");
+      speak(title);
+
+      for (let opt of options) {
+        const symbolUrl = await getSymbol(opt);
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerHTML = `
+          ${symbolUrl ? `<img src="${symbolUrl}" alt="${opt}">` : ""}
+          <span>${opt}</span>
+        `;
+        div.onclick = () => {
+          speak(opt, symbolUrl);
+          callback(opt);
+        };
+        optionsDiv.appendChild(div);
       }
     }
 
-    function setName() {
-      const name = document.getElementById("playerName").value;
-      if (name.trim() !== "") {
-        document.getElementById("welcome").classList.add("hidden");
-        document.getElementById("characterSelect").classList.remove("hidden");
-        speak("Hello " + name + ". Choose your character.");
-      } else {
-        speak("Please enter your name.");
-      }
+    // Game flow
+    async function startGame() {
+      speak("Welcome to the adventure! What is your name?");
+      game.innerHTML = `
+        <h2>Welcome to the adventure!</h2>
+        <p>What is your name?</p>
+        <input type="text" id="playerName" placeholder="Enter your name" />
+        <button id="startBtn">Continue</button>
+      `;
+      document.getElementById("startBtn").onclick = () => {
+        const name = document.getElementById("playerName").value || "Player";
+        chooseCharacter(name);
+      };
     }
 
-    function selectCharacter(character, symbolSrc) {
-      document.getElementById("characterSelect").classList.add("hidden");
-      document.getElementById("skillSelect").classList.remove("hidden");
-      speak("You chose " + character + ". Now select your special skill.", symbolSrc);
+    async function chooseCharacter(name) {
+      const characters = ["Knight", "Wizard", "Explorer"];
+      await showOptions(`${name}, choose your character:`, characters, skillSelection);
     }
 
-    function selectSkill(skill, symbolSrc) {
-      speak("You selected " + skill + " as your special skill.", symbolSrc);
+    async function skillSelection(character) {
+      const skills = [
+        "Running", "Teamwork", "Reading", "Writing", "Cooking",
+        "Flying", "Casting spells", "Invisibility", "Healing",
+        "Sword fighting", "Singing", "Dancing"
+      ];
+      await showOptions(`Great choice! Now, what is your special skill?`, skills, (skill) => {
+        speak(`You chose the skill: ${skill}`);
+        game.innerHTML = `<h2>You are ready! Character and skill chosen.</h2>`;
+      });
     }
+
+    startGame();
   </script>
 </body>
 </html>

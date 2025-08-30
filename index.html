@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Adventure Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      margin: 0;
+      padding-bottom: 100px; /* space for fixed readout bar */
+    }
+    .container {
+      margin-top: 50px;
+    }
+    .options img {
+      width: 100px;
+      height: 100px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    #readout-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 2px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+    }
+    #readout-symbol {
+      width: 60px;
+      height: 60px;
+      display: block;
+      margin: 0 auto 5px auto;
+    }
+    #readout-text {
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="welcome" class="container">
+    <h1>Welcome to the Adventure!</h1>
+    <p>What is your name?</p>
+    <input type="text" id="playerName" placeholder="Enter your name" />
+    <button onclick="setName()">Continue</button>
+  </div>
+
+  <div id="characterSelect" class="container hidden">
+    <h2>Choose your character</h2>
+    <div class="options">
+      <img src="https://static.arasaac.org/pictograms/11860/11860.png" alt="Hero" onclick="selectCharacter('Hero', this.src)">
+      <img src="https://static.arasaac.org/pictograms/2475/2475.png" alt="Wizard" onclick="selectCharacter('Wizard', this.src)">
+      <img src="https://static.arasaac.org/pictograms/31656/31656.png" alt="Explorer" onclick="selectCharacter('Explorer', this.src)">
+    </div>
+  </div>
+
+  <div id="skillSelect" class="container hidden">
+    <h2>What is your special skill?</h2>
+    <div class="options">
+      <img src="https://static.arasaac.org/pictograms/12623/12623.png" alt="Running" onclick="selectSkill('Running', this.src)">
+      <img src="https://static.arasaac.org/pictograms/17453/17453.png" alt="Teamwork" onclick="selectSkill('Teamwork', this.src)">
+      <img src="https://static.arasaac.org/pictograms/5205/5205.png" alt="Reading" onclick="selectSkill('Reading', this.src)">
+      <img src="https://static.arasaac.org/pictograms/16955/16955.png" alt="Writing" onclick="selectSkill('Writing', this.src)">
+      <img src="https://static.arasaac.org/pictograms/2076/2076.png" alt="Cooking" onclick="selectSkill('Cooking', this.src)">
+      <img src="https://static.arasaac.org/pictograms/2760/2760.png" alt="Singing" onclick="selectSkill('Singing', this.src)">
+      <img src="https://static.arasaac.org/pictograms/5735/5735.png" alt="Drawing" onclick="selectSkill('Drawing', this.src)">
+      <img src="https://static.arasaac.org/pictograms/11229/11229.png" alt="Magic" onclick="selectSkill('Casting Spells', this.src)">
+      <img src="https://static.arasaac.org/pictograms/11925/11925.png" alt="Flying" onclick="selectSkill('Flying', this.src)">
+      <img src="https://static.arasaac.org/pictograms/19183/19183.png" alt="Invisibility" onclick="selectSkill('Invisibility', this.src)">
+      <img src="https://static.arasaac.org/pictograms/34771/34771.png" alt="Super Strength" onclick="selectSkill('Super Strength', this.src)">
+      <img src="https://static.arasaac.org/pictograms/35057/35057.png" alt="Healing" onclick="selectSkill('Healing', this.src)">
+    </div>
+  </div>
+
+  <!-- Fixed Readout Bar -->
+  <div id="readout-bar">
+    <img id="readout-symbol" src="" alt="" class="hidden">
+    <div id="readout-text"></div>
+  </div>
+
+  <script>
+    function speak(text, symbolSrc = null) {
+      // stop any current speech
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+
+      // update readout bar
+      document.getElementById("readout-text").textContent = text;
+      if (symbolSrc) {
+        const symbol = document.getElementById("readout-symbol");
+        symbol.src = symbolSrc;
+        symbol.classList.remove("hidden");
+      } else {
+        document.getElementById("readout-symbol").classList.add("hidden");
+      }
+    }
+
+    function setName() {
+      const name = document.getElementById("playerName").value;
+      if (name.trim() !== "") {
+        document.getElementById("welcome").classList.add("hidden");
+        document.getElementById("characterSelect").classList.remove("hidden");
+        speak("Hello " + name + ". Choose your character.");
+      } else {
+        speak("Please enter your name.");
+      }
+    }
+
+    function selectCharacter(character, symbolSrc) {
+      document.getElementById("characterSelect").classList.add("hidden");
+      document.getElementById("skillSelect").classList.remove("hidden");
+      speak("You chose " + character + ". Now select your special skill.", symbolSrc);
+    }
+
+    function selectSkill(skill, symbolSrc) {
+      speak("You selected " + skill + " as your special skill.", symbolSrc);
+    }
+  </script>
+</body>
+</html>
